@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Initialize database
 const dbService = new DatabaseService();
-await dbService.initializeDatabase();
+// await dbService.initializeDatabase();
 
 // Routes
 app.use('/api', chatRoutes);
