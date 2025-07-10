@@ -46,6 +46,21 @@ export const handleChatQuery = async (req, res) => {
         if (vizAnalysis && vizAnalysis.canVisualize) {
           response.visualization = vizAnalysis;
         }
+
+        // Generate a natural language summary using Gemini
+        if (selectResult.data && selectResult.data.length > 0) {
+          const summaryPrompt = `User request: ${sanitizedMessage}\n\nMovie data: ${JSON.stringify(selectResult.data.slice(0, 10))}\n\nWrite a natural language answer for the user request above, based on the movie data. Be concise and clear.`;
+          try {
+            const summaryResult = await sqlAgent.model.generateContent(summaryPrompt);
+            const summaryText = await summaryResult.response.text();
+            response.summary = summaryText.trim();
+          } catch (summaryError) {
+            console.error('Summary generation error:', summaryError);
+            response.summary = null;
+          }
+        } else {
+          response.summary = 'No results found.';
+        }
         break;
 
       case 'INSERT':
