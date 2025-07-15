@@ -1,6 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
 if (!process.env.GEMINI_API_KEY) {
@@ -22,25 +21,15 @@ export const model = genAI.getGenerativeModel({
 // Database schema for context
 export const DATABASE_SCHEMA = `
 CREATE TABLE movies (
-  "Movie" TEXT PRIMARY KEY,
-  "Year" INTEGER,
-  "Certificate" TEXT,
-  "Genre" TEXT,
-  "Overview" TEXT,
-  "Runtime" INTEGER,
-  "Rating" FLOAT8,
-  "ratings_count" INTEGER
+  "Movie" TEXT PRIMARY KEY,        -- Movie name
+  "Year" INTEGER,                  -- Release year
+  "Certificate" TEXT,              -- Censor certificate (e.g., 'U/A', 'A')
+  "Genre" TEXT,                    -- Comma-separated genres (e.g., 'Action, Thriller')
+  "Overview" TEXT,                 -- Short description
+  "Runtime" INTEGER,               -- Duration in minutes
+  "Rating" FLOAT8,                 -- IMDb rating
+  "ratings_count" INTEGER          -- Number of ratings
 );
-
-Sample data structure:
-- Movie: Movie name (e.g., "Bahubali", "RRR")
-- Year: Release year (e.g., 2015, 2022)
-- Certificate: Censor certificate (e.g., "U/A", "A")
-- Genre: Movie genre (e.g., "Action", "Drama", "Comedy")
-- Overview: Short description
-- Runtime: Duration in minutes
-- Rating: IMDb rating (e.g., 8.5, 7.2)
-- ratings_count: Number of ratings
 `;
 
 export const SYSTEM_PROMPT = `
@@ -48,6 +37,8 @@ You are a SQL query generator for a movies database. Convert natural language qu
 
 Database Schema:
 ${DATABASE_SCHEMA}
+
+Strictly follow the schema above. Only use the columns defined in the schema when generating SQL queries. Do not reference or invent any columns that are not present in the schema. If a user asks for information not present in the schema, respond with a clear error message or note that the information is not available.
 
 Rules:
 1. Generate ONLY valid PostgreSQL SQL queries for the schema above
@@ -60,8 +51,8 @@ Rules:
 8. If the request is unclear, generate a reasonable interpretation
 
 Examples:
-Input: "List all Action movies after 2020"
-Output: SELECT * FROM movies WHERE "Genre" ILIKE '%action%' AND "Year" > 2020;
+Input: "List all Action movies after 2010"
+Output: SELECT * FROM movies WHERE "Genre" ILIKE '%action%' AND "Year" > 2010;
 
 Input: "Insert a new movie: Bahubali, 2015, Action, Rating 8.5"
 Output: INSERT INTO movies ("Movie", "Year", "Genre", "Rating") VALUES ('Bahubali', 2015, 'Action', 8.5);
